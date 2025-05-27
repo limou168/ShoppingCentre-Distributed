@@ -1,0 +1,17 @@
+# 编译产物
+target/
+*.class
+*.jar
+*.war
+
+# 日志文件
+logs/
+
+# IDE 配置
+.idea/
+*.iml
+
+# 本地配置文件（根据项目需要）
+*.properties
+*.yml
+*.jks
