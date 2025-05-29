@@ -1,5 +1,6 @@
 package com.li.cartservice.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -8,12 +9,17 @@ import com.hmall.common.utils.BeanUtils;
 import com.hmall.common.utils.CollUtils;
 import com.hmall.common.utils.UserContext;
 import com.li.cartservice.domain.dto.CartFormDTO;
+import com.li.cartservice.domain.dto.ItemDTO;
 import com.li.cartservice.domain.po.Cart;
 import com.li.cartservice.domain.vo.CartVO;
 import com.li.cartservice.mapper.CartMapper;
 import com.li.cartservice.service.ICartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,8 +39,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements ICartService {
-        //todo 后续修改
+
 //    private final IItemService itemService;
+    private final RestTemplate restTemplate;
 
     @Override
     public void addItem2Cart(CartFormDTO cartFormDTO) {
@@ -81,8 +88,20 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
         // 1.获取商品id
         Set<Long> itemIds = vos.stream().map(CartVO::getItemId).collect(Collectors.toSet());
         // 2.查询商品
-        //todo 后续修改
-      /*  List<ItemDTO> items = itemService.queryItemByIds(itemIds);
+        ResponseEntity<List<ItemDTO>> request = restTemplate.exchange(
+                "http://localhost:8081/items?ids={ids}",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ItemDTO>>() {
+                },
+                Map.of("ids", CollUtil.join(itemIds, ","))
+        );
+
+        if(!request.getStatusCode().is2xxSuccessful()){
+            return;
+        }
+        List<ItemDTO> items = request.getBody();
+//        List<ItemDTO> items = itemService.queryItemByIds(itemIds);
         if (CollUtils.isEmpty(items)) {
             return;
         }
@@ -97,7 +116,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements IC
             v.setNewPrice(item.getPrice());
             v.setStatus(item.getStatus());
             v.setStock(item.getStock());
-        }*/
+        }
     }
 
     @Override
